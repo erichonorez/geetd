@@ -44,13 +44,16 @@ def update_todo(request, todo):
 
 def get_all_todos(request):
     try:
-        validated_done_file = validate_done_filter(request.GET.get('done', '1'))
+        is_done = int(validate_is_done_filter(request.query_params.get('is_done', '1')))
     except ValidationError as validation_error:
-        return Response(validation_error.message_dict(), status=status.HTTP_400_BAD_REQUEST)
-        
-    serializer = TodoListSerializer({ 'todos': Todo.objects.all() })
+        return Response({ 'errors': validation_error.message_dict }, status=status.HTTP_400_BAD_REQUEST)
+    query_set = Todo.objects
+    if is_done > -1:
+        query_set = query_set.filter(is_done=is_done == 1)
+    serializer = TodoListSerializer({ 'todos': query_set })
     return Response(serializer.data)
 
-def validate_done_filter(filter):
+def validate_is_done_filter(filter):
     if filter not in ['-1', '0', '1']:
-        raise ValidationError('Invalid filtering on done params', code='done')
+        raise ValidationError({'is_done': 'Invalid filtering on done params'})
+    return filter
