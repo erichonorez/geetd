@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    "drf_yasg",
     'todo.apps.TodoConfig'
 ]
 
@@ -122,4 +123,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # Rest framework configuration
-REST_FRAMEWORK = { }
+REST_FRAMEWORK = { 
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': None,
+}
