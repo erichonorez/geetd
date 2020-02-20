@@ -39,7 +39,8 @@ class Todo(ValidateOnSaveMixin, models.Model):
         todos = Todo.objects.filter(
             ~Q(pk=self.id),
             Q(state=self.state),
-            Q(priority_order__gte=priority_order)
+            Q(priority_order__gte=priority_order),
+            Q(priority_order__lt=self.priority_order)
         ).order_by('priority_order')
         
         for idx, todo in enumerate(todos, start=1):

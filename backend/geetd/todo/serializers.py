@@ -10,3 +10,6 @@ class TodoSerializer(serializers.ModelSerializer):
 
 class ChangeTodoStateSerializer(serializers.Serializer):
     state = serializers.ChoiceField(choices=Todo.STATES)
+
+class PriorityzeTodoSerializer(serializers.Serializer):
+    priority_order = serializers.IntegerField(min_value=0)
