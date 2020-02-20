@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 
 from .serializers import TodoSerializer
-from .serializers import ChangeTodoStateSerializer
 from .serializers import PriorityzeTodoSerializer
 from .models import Todo
 
@@ -18,20 +17,6 @@ class TodoListView(generics.ListCreateAPIView):
 class TodoView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Todo.objects.all()
     serializer_class =  TodoSerializer
-
-class ChangeTodoStateView(generics.GenericAPIView):
-    queryset = Todo.objects.all()
-    serializer_class = ChangeTodoStateSerializer
-    
-    def put(self, request, pk):
-        serializer = self.get_serializer(data=request.POST)
-        serializer.is_valid(raise_exception=True)
-        try:
-            todo = self.get_queryset().get(pk=pk)
-        except Todo.DoesNotExist:
-            return NotFound()
-        todo.move_to_state(serializer.validated_data['state'])
-        return Response(serializer.data)
 
 class PrioritizeTodoView(generics.GenericAPIView):
     queryset = Todo.objects.all()

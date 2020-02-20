@@ -6,10 +6,7 @@ class TodoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Todo
         fields = '__all__'
-        read_only_fields = ['state', 'priority_order']
-
-class ChangeTodoStateSerializer(serializers.Serializer):
-    state = serializers.ChoiceField(choices=Todo.STATES)
+        read_only_fields = ['priority_order']
 
 class PriorityzeTodoSerializer(serializers.Serializer):
     priority_order = serializers.IntegerField(min_value=0)

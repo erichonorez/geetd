@@ -29,35 +29,58 @@ class Todo(ValidateOnSaveMixin, models.Model):
     state = models.CharField(max_length=5, choices=STATES, default=INBOX)
     priority_order = models.IntegerField(default=0)
 
+    def __init__(self, *args, **kwargs):
+        super(Todo, self).__init__(*args, **kwargs)
+        self._original_state = self.__dict__
+
     def move_to_state(self, state):
         self.priority_order = Todo.get_next_priority_order(state)
         self.state = state
         self.save()
     
     def prioritize(self, priority_order):
+        if priority_order is self.priority_order:
+            return
+
         #TODO: replace with one update query
-        todos = Todo.objects.filter(
+        query = Todo.objects.filter(
             ~Q(pk=self.id),
             Q(state=self.state),
-            Q(priority_order__gte=priority_order),
-            Q(priority_order__lt=self.priority_order)
-        ).order_by('priority_order')
+        )
+        if priority_order < self.priority_order:
+            query = query.filter(
+                Q(priority_order__gte=priority_order),
+                Q(priority_order__lt=self.priority_order)
+            ).order_by('priority_order')
+            
+            for todo in query:
+                todo.priority_order += 1
+                todo.save()
         
-        for idx, todo in enumerate(todos, start=1):
-            todo.priority_order += idx
-            todo.save()
+        else:
+            query = query.filter(
+                Q(priority_order__lte=priority_order),
+                Q(priority_order__gt=self.priority_order)
+            ).order_by('priority_order')
+
+            for todo in query:
+                todo.priority_order -= 1
+                todo.save()
 
         self.priority_order = priority_order
         self.save()
 
     def save(self, *args, **kwargs):
-        if self._state.adding:
+        if self._should_change_priority_order():
             try:
                 self.priority_order = Todo.get_next_priority_order(self.state)
             except:
                 pass
 
         super(Todo, self).save(*args, **kwargs)
+
+    def _should_change_priority_order(self):
+        return self._state.adding or (self._original_state.get('state') is not self.state)
 
     @staticmethod
     def get_next_priority_order(state):
