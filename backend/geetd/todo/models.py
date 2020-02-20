@@ -2,6 +2,7 @@ import uuid
 
 from django.db import models
 from django.db.models import Q
+from django.db.models import DEFERRED
 
 from django.core.validators import MinLengthValidator
 from django.core.validators import MaxLengthValidator
@@ -71,7 +72,22 @@ class Todo(ValidateOnSaveMixin, models.Model):
         self.save()
 
     def save(self, *args, **kwargs):
+        if self._did_state_changed():
+            # If the state has changed we need to update the 
+            # prioritization of the remaining todo in the previous state
+            query = Todo.objects.filter(
+                ~Q(pk=self.id),
+                Q(state=self._original_state.get('state')),
+                Q(priority_order__gt=self.priority_order)
+            ).order_by('priority_order')
+
+            for todo in query:
+                todo.priority_order -= 1
+                todo.save()
+
         if self._should_change_priority_order():
+            # When the state has changed or if the todo is newly created
+            # we need to assign a new prioritization to self
             try:
                 self.priority_order = Todo.get_next_priority_order(self.state)
             except:
@@ -79,8 +95,19 @@ class Todo(ValidateOnSaveMixin, models.Model):
 
         super(Todo, self).save(*args, **kwargs)
 
+    def _did_state_changed(self):
+        return self._original_state.get('state') is not self.state
+
     def _should_change_priority_order(self):
-        return self._state.adding or (self._original_state.get('state') is not self.state)
+        return self._state.adding or self._did_state_changed()
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super(Todo, cls).from_db(db, field_names, values)
+
+        # customization to store the original field values on the instance
+        instance._original_state = dict(zip(field_names, values))
+        return instance
 
     @staticmethod
     def get_next_priority_order(state):
