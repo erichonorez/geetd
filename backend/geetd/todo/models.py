@@ -52,12 +52,12 @@ class Todo(ValidateOnSaveMixin, models.Model):
     def save(self, *args, **kwargs):
         if self._state.adding:
             try:
-                self.priority_order = Todo.get_next_priority_order(state)
+                self.priority_order = Todo.get_next_priority_order(self.state)
             except:
-                pass              
+                pass
 
         super(Todo, self).save(*args, **kwargs)
 
     @staticmethod
     def get_next_priority_order(state):
-        Todo.objects.filter(state=state).order_by('-priority_order').first().priority_order + 1
+        return Todo.objects.filter(state=state).order_by('-priority_order').first().priority_order + 1

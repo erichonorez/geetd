@@ -20,5 +20,6 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('todos', views.TodoListView.as_view()),
     path('todos/<uuid:pk>', views.TodoView.as_view()),
+    path('todos/<uuid:pk>/change-state', views.ChangeTodoStateView.as_view()),
     path('doc', schema_view.with_ui('swagger', cache_timeout=0), name='schema-redoc'),
 ]
