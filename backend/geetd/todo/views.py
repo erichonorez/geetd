@@ -3,6 +3,7 @@ import django_filters.rest_framework
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
+from rest_framework.filters import OrderingFilter
 
 from .serializers import TodoSerializer
 from .serializers import PriorityzeTodoSerializer
@@ -11,8 +12,9 @@ from .models import Todo
 class TodoListView(generics.ListCreateAPIView):
     queryset = Todo.objects.all()
     serializer_class = TodoSerializer
-    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend, OrderingFilter]
     filterset_fields = ['is_done', 'state']
+    ordering_fields = ['priority_order']
 
 class TodoView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Todo.objects.all()

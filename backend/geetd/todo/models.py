@@ -2,7 +2,6 @@ import uuid
 
 from django.db import models
 from django.db.models import Q
-from django.db.models import DEFERRED
 
 from django.core.validators import MinLengthValidator
 from django.core.validators import MaxLengthValidator
@@ -33,11 +32,6 @@ class Todo(ValidateOnSaveMixin, models.Model):
     def __init__(self, *args, **kwargs):
         super(Todo, self).__init__(*args, **kwargs)
         self._original_state = self.__dict__
-
-    def move_to_state(self, state):
-        self.priority_order = Todo.get_next_priority_order(state)
-        self.state = state
-        self.save()
     
     def prioritize(self, priority_order):
         if priority_order is self.priority_order:
