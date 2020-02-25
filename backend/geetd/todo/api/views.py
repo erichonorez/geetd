@@ -7,7 +7,7 @@ from rest_framework.filters import OrderingFilter
 
 from .serializers import TodoSerializer
 from .serializers import PriorityzeTodoSerializer
-from .models import Todo
+from ..models import Todo
 
 class TodoListView(generics.ListCreateAPIView):
     queryset = Todo.objects.all()
