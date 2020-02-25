@@ -1,0 +1,18 @@
+<aside class="sidebar-wrapper">
+    <div class="sidebar main-sidebar sidebar-dark-primary elevation-4">
+        <a href="" class="brand-link">
+            <span class="brand-text font-weight-light">GeeTD</span>
+        </a>
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                <li class="nav-header">STATES</li>
+                {% for state in states %}
+                <li class="nav-item">
+                    <a href="{% url 'web-todo-list' %}?state={{state.0}}"
+                       class="nav-link {% if selected_state == state.0 %} active {% endif %}">{{ state.1 }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </div>
+</aside>
