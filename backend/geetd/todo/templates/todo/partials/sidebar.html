@@ -6,7 +6,7 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
                 <li class="nav-header">STATES</li>
-                {% for state in states %}
+                {% for state in sidebar.states %}
                 <li class="nav-item">
                     <a href="{% url 'web-todo-list' %}?state={{state.0}}"
                        class="nav-link {% if selected_state == state.0 %} active {% endif %}">{{ state.1 }}</a>

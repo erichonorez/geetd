@@ -11,11 +11,13 @@ from django.core.exceptions import ValidationError
 INBOX = 'inbox'
 NEXT = 'next'
 
-class ValidateOnSaveMixin():
+
+class ValidateOnSaveMixin:
     def save(self, skip_validate=False, **kwargs):
         if not skip_validate:
             self.full_clean()
         super(ValidateOnSaveMixin, self).save(kwargs)
+
 
 class Todo(ValidateOnSaveMixin, models.Model):
     STATES = (
@@ -24,7 +26,8 @@ class Todo(ValidateOnSaveMixin, models.Model):
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=255, null=False, blank=False, validators=[MinLengthValidator(1), MaxLengthValidator(255)])
+    title = models.CharField(max_length=255, null=False, blank=False,
+                             validators=[MinLengthValidator(1), MaxLengthValidator(255)])
     is_done = models.BooleanField(null=False, default=False)
     state = models.CharField(max_length=5, choices=STATES, default=INBOX)
     priority_order = models.IntegerField(default=0)
@@ -32,12 +35,12 @@ class Todo(ValidateOnSaveMixin, models.Model):
     def __init__(self, *args, **kwargs):
         super(Todo, self).__init__(*args, **kwargs)
         self._original_state = self.__dict__
-    
+
     def prioritize(self, priority_order):
         if priority_order is self.priority_order:
             return
 
-        #TODO: replace with one update query
+        # TODO: replace with one update query
         query = Todo.objects.filter(
             ~Q(pk=self.id),
             Q(state=self.state),
@@ -47,11 +50,11 @@ class Todo(ValidateOnSaveMixin, models.Model):
                 Q(priority_order__gte=priority_order),
                 Q(priority_order__lt=self.priority_order)
             ).order_by('priority_order')
-            
+
             for todo in query:
                 todo.priority_order += 1
                 todo.save()
-        
+
         else:
             query = query.filter(
                 Q(priority_order__lte=priority_order),
