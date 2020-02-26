@@ -93,7 +93,7 @@ class Todo(ValidateOnSaveMixin, models.Model):
         super(Todo, self).save(*args, **kwargs)
 
     def _did_state_changed(self):
-        return self._original_state.get('state') is not self.state
+        return self._original_state.get('state') != self.state
 
     def _should_change_priority_order(self):
         return self._state.adding or self._did_state_changed()

@@ -57,27 +57,46 @@ class ToggleCompleteView(View):
         return HttpResponseRedirect(reverse('web-todo-list') + '?state=' + selected_state)
 
 
-class AddTodoForm(forms.Form):
+class TodoForm(forms.Form):
     title = forms.CharField(required=True, label='Title*', validators=[MinLengthValidator(1), MaxLengthValidator(255)])
     state = forms.ChoiceField(required=True, label='State*', choices=Todo.STATES)
     referrer = forms.URLField(required=True)
 
 
-class AddTodoView(View):
-
-    def get(self, request):
-        form = AddTodoForm(initial={'referrer':request.META.get('HTTP_REFERER', reverse('web-todo-list'))})
-        return render(request, 'todo/add.html', {'form': form, 'sidebar': get_sidebar_context()})
-
-
 class CreateTodoView(View):
 
+    def get(self, request):
+        form = TodoForm(initial={'referrer': request.META.get('HTTP_REFERER', reverse('web-todo-list'))})
+        return render(request, 'todo/add.html', {'form': form, 'sidebar': get_sidebar_context()})
+
     def post(self, request):
-        form = AddTodoForm(request.POST)
+        form = TodoForm(request.POST)
         if not form.is_valid():
             return render(request, 'todo/add.html', {'form': form, 'sidebar': get_sidebar_context()})
 
         todo = Todo(title=form.cleaned_data['title'], state=form.cleaned_data['state'])
+        todo.save()
+
+        return HttpResponseRedirect(form.cleaned_data['referrer'])
+
+
+class UpdateTodoView(View):
+
+    def get(self, request, todo_id):
+        todo = get_object_or_404(Todo, pk=todo_id)
+        form_data = todo.__dict__
+        form_data['referrer'] = request.META.get('HTTP_REFERER', reverse('web-todo-list'))
+        form = TodoForm(data=form_data)
+        return render(request, 'todo/show.html', {'todo': todo, 'form': form, 'sidebar': get_sidebar_context()})
+
+    def post(self, request, todo_id):
+        todo = get_object_or_404(Todo, pk=todo_id)
+        form = TodoForm(request.POST)
+        if not form.is_valid():
+            return render(request, 'todo/show.html', {'todo': todo, 'form': form, 'sidebar': get_sidebar_context()})
+
+        todo.title = form.cleaned_data['title']
+        todo.state = form.cleaned_data['state']
         todo.save()
 
         return HttpResponseRedirect(form.cleaned_data['referrer'])

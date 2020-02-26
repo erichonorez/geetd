@@ -6,13 +6,13 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-12">
-                    <h1>New todo</h1>
+                    <h1>Edit todo</h1>
                 </div>
             </div>
         </div>
     </section>
     <div class="card">
-        <form id='addTodoForm' class="form" method="post" action="{% url 'web-todo-create' %}">
+        <form id='editTodoForm' class="form" method="post" action="/todos/{{ todo.id }}">
             {% include 'todo/partials/todo_form.html' %}
         </form>
     </div>

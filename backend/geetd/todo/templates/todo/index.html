@@ -41,7 +41,7 @@
                             </div>
                         </td>
                         <td class="mailbox-subject">
-                            {{ todo.title }}
+                            <a href="{% url 'web-todo-update' todo_id=todo.id %}">{{ todo.title }}</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -69,6 +69,9 @@
     }
     .mailbox-messages table tbody tr td.mailbox-subject.mailbox-subject {
         vertical-align: middle;
+    }
+    .mailbox-subject a {
+        color: rgb(33, 37, 41)
     }
 </style>
 {% endblock %}
