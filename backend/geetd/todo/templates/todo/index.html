@@ -1,7 +1,7 @@
 {% extends 'todo/base.html' %}
 
 {% block content %}
-<div style="padding-left: 20px; padding-right: 20px">
+<div class="content-container">
 
     <section class="content-header">
         <div class="container-fluid">
@@ -13,6 +13,17 @@
         </div>
     </section>
 
+    {% if toggleCompleteForm.todo_id.errors %}
+    <div class="alert alert-danger alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        Oups ! Something went wrong :(
+    </div>
+    {% endif %}
+    <form id="toggleCompleteForm" method="post" action="/todos/toggle-complete" style="display:none">
+        {% csrf_token %}
+        <input id="toggleTodoId" type="text" name="todo_id" />
+    </form>
+
     <div class="card card-primary card-outline">
         <div class="card-body p-0">
             <div class="table-responsive mailbox-messages">
@@ -22,12 +33,15 @@
                     <tr>
                         <td>
                             <div class="icheck-primary">
-                                <input type="checkbox" id="check_{{todo.id}}" {% if state.is_done %} checked {% endif %}>
+                                <input type="checkbox"
+                                       id="check_{{todo.id}}" {% if todo.is_done %} checked {% endif %}
+                                       onclick="onCheck(this, '{{ todo.id }}');"
+                                       data-todo-id="{{ todo.id }}">
                                 <label for="check_{{todo.id}}"></label>
                             </div>
                         </td>
                         <td class="mailbox-subject">
-                            <p>{{ todo.title }}</p>
+                            {{ todo.title }}
                         </td>
                     </tr>
                     {% endfor %}
@@ -38,4 +52,37 @@
     </div>
 
 </div>
+
+{% endblock %}
+
+{% block css %}
+<style>
+    .content-container {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    .mailbox-messages table tbody tr td .icheck-primary {
+        width: 0px;
+    }
+    .mailbox-messages table tbody tr td:first-of-type {
+        width: 50px;
+    }
+    .mailbox-messages table tbody tr td {
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+    .mailbox-messages table tbody tr td.mailbox-subject.mailbox-subject {
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function onCheck(source, todoId) {
+        var todoId = $(source).data('todoId');
+        $('#toggleTodoId').attr('value', todoId)
+        $('#toggleCompleteForm').submit()
+    }
+</script>
 {% endblock %}
