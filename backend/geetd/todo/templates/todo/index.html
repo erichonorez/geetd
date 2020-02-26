@@ -21,16 +21,16 @@
     {% endif %}
     <form id="toggleCompleteForm" method="post" action="/todos/toggle-complete" style="display:none">
         {% csrf_token %}
-        <input id="toggleTodoId" type="text" name="todo_id" />
+        <input id="toggleTodoId" type="text" name="todo_id"/>
     </form>
 
     <div class="card card-outline">
         <div class="card-body p-0">
             <div class="table-responsive mailbox-messages">
                 <table class="table table-hover">
-                    <tbody>
+                    <tbody id="sortable-container">
                     {% for todo in todos %}
-                    <tr>
+                    <tr data-todo-id="{{ todo.id }}">
                         <td>
                             <div class="icheck-primary">
                                 <input type="checkbox"
@@ -77,11 +77,33 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/Sortable.min.js"
+        integrity="sha256-9D6DlNlpDfh0C8buQ6NXxrOdLo/wqFUwEB1s70obwfE=" crossorigin="anonymous"></script>
 <script>
     function onCheck(source, todoId) {
         var todoId = $(source).data('todoId');
         $('#toggleTodoId').attr('value', todoId)
         $('#toggleCompleteForm').submit()
     }
+
+    (function() {
+        var el = document.getElementById('sortable-container');
+        var sortable = Sortable.create(el, {
+            animation: 250,
+            onSort: function (evt) {
+		        var id = $(evt.item).data('todoId');
+		        var newPriority = evt.newIndex + 1;
+		        console.log($);
+		        $.ajax('/todos/' + id + '/prioritize', {
+		            data: { priority_order: newPriority },
+		            method: 'POST',
+		            headers: {
+		                'X-CSRFToken': $("[name=csrfmiddlewaretoken]").val()
+		            }
+                });
+	        }
+        });
+    })();
+
 </script>
 {% endblock %}

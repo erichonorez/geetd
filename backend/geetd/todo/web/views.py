@@ -1,5 +1,5 @@
 from django import forms
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.views import View
@@ -7,6 +7,8 @@ from django.urls import reverse
 
 from django.core.validators import MinLengthValidator
 from django.core.validators import MaxLengthValidator
+
+from rest_framework import serializers
 
 from ..models import Todo
 from ..models import INBOX
@@ -100,3 +102,17 @@ class UpdateTodoView(View):
         todo.save()
 
         return HttpResponseRedirect(form.cleaned_data['referrer'])
+
+
+class PriorityzeTodoSerializer(serializers.Serializer):
+    priority_order = serializers.IntegerField(min_value=0)
+
+
+class PrioritizeTodoView(View):
+
+    def post(self, request, todo_id):
+        serializer = PriorityzeTodoSerializer(data=request.POST)
+        serializer.is_valid(raise_exception=True)
+        todo = get_object_or_404(Todo, pk=todo_id)
+        todo.prioritize(serializer.validated_data['priority_order'])
+        return JsonResponse(serializer.data)
