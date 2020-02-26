@@ -25,38 +25,18 @@ class HomeView(View):
         todos = Todo.objects \
             .filter(state=state) \
             .order_by('priority_order')
-        response = render(request, 'todo/index.html',
-                          {'todos': todos, 'selected_state': state, 'sidebar': get_sidebar_context()})
-        response.set_cookie('selected_state', state, httponly=True)
-        return response
-
-
-class ToggleCompleteForm(forms.Form):
-    todo_id = forms.UUIDField(required=True)
+        return render(request, 'todo/index.html',
+                      {'todos': todos, 'selected_state': state, 'sidebar': get_sidebar_context()})
 
 
 class ToggleCompleteView(View):
 
-    def post(self, request):
-        form = ToggleCompleteForm(request.POST)
-        selected_state = request.COOKIES.get('selected_state', INBOX)
-        if not form.is_valid():
-            todos = Todo.objects \
-                .filter(state=selected_state) \
-                .order_by('priority_order')
-            response = render(request, 'todo/index.html', {
-                'todos': todos,
-                'sidebar': get_sidebar_context(),
-                'selected_state': selected_state,
-                'toggleCompleteForm': form
-            })
-            return response
-
-        todo = get_object_or_404(Todo, pk=form.cleaned_data['todo_id'])
+    def post(self, request, todo_id):
+        todo = get_object_or_404(Todo, pk=todo_id)
         todo.is_done = not todo.is_done
         todo.save()
 
-        return HttpResponseRedirect(reverse('web-todo-list') + '?state=' + selected_state)
+        return JsonResponse(todo.__dict__)
 
 
 class TodoForm(forms.Form):
