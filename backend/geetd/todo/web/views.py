@@ -1,5 +1,5 @@
 from django import forms
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.views import View
@@ -23,9 +23,7 @@ class HomeView(View):
 
     def get(self, request):
         state = request.GET.get('state', INBOX)
-        todos = Todo.objects \
-            .filter(state=state) \
-            .order_by('priority_order')
+        todos = Todo.objects.get_by_state(state)
         return render(request, 'todo/index.html',
                       {'todos': todos, 'selected_state': state, 'sidebar': get_sidebar_context()})
 
@@ -41,10 +39,13 @@ class ToggleCompleteView(View):
         return JsonResponse(todo_serializer.data)
 
 
-class TodoForm(forms.Form):
+class WithReferrer(forms.Form):
+    referrer = forms.URLField(required=True)
+
+
+class TodoForm(WithReferrer, forms.Form):
     title = forms.CharField(required=True, label='Title*', validators=[MinLengthValidator(1), MaxLengthValidator(255)])
     state = forms.ChoiceField(required=True, label='State*', choices=Todo.STATES)
-    referrer = forms.URLField(required=True)
 
 
 class CreateTodoView(View):
@@ -64,7 +65,7 @@ class CreateTodoView(View):
         return HttpResponseRedirect(form.cleaned_data['referrer'])
 
 
-class UpdateTodoView(View):
+class DetailTodoView(View):
 
     def get(self, request, todo_id):
         todo = get_object_or_404(Todo, pk=todo_id)
@@ -84,6 +85,21 @@ class UpdateTodoView(View):
         todo.save()
 
         return HttpResponseRedirect(form.cleaned_data['referrer'])
+
+
+class DeleteTodoView(View):
+
+    def post(self, request, todo_id):
+        todo = get_object_or_404(Todo, pk=todo_id)
+        todo.delete()
+
+        form = WithReferrer(request.POST)
+        if not form.is_valid():
+            redirect_url = reverse('web-todo-list')
+        else:
+            redirect_url = form.cleaned_data['referrer']
+
+        return HttpResponseRedirect(redirect_url)
 
 
 class PriorityzeTodoSerializer(serializers.Serializer):

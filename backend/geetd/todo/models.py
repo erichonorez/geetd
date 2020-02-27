@@ -12,6 +12,14 @@ INBOX = 'inbox'
 NEXT = 'next'
 
 
+class TodoManager(models.Manager):
+
+    def get_by_state(self, state):
+        return self.get_queryset() \
+            .filter(state=state) \
+            .order_by('priority_order')
+
+
 class ValidateOnSaveMixin:
     def save(self, skip_validate=False, **kwargs):
         if not skip_validate:
@@ -31,6 +39,8 @@ class Todo(ValidateOnSaveMixin, models.Model):
     is_done = models.BooleanField(null=False, default=False)
     state = models.CharField(max_length=5, choices=STATES, default=INBOX)
     priority_order = models.IntegerField(default=0)
+
+    objects = TodoManager()
 
     def __init__(self, *args, **kwargs):
         super(Todo, self).__init__(*args, **kwargs)
