@@ -80,17 +80,7 @@ class Todo(ValidateOnSaveMixin, models.Model):
 
     def save(self, *args, **kwargs):
         if self._did_state_changed():
-            # If the state has changed we need to update the 
-            # prioritization of the remaining todo in the previous state
-            query = Todo.objects.filter(
-                ~Q(pk=self.id),
-                Q(state=self._original_state.get('state')),
-                Q(priority_order__gt=self.priority_order)
-            ).order_by('priority_order')
-
-            for todo in query:
-                todo.priority_order -= 1
-                todo.save()
+            self.change_priority_of_remaining_todos()
 
         if self._should_change_priority_order():
             # When the state has changed or if the todo is newly created
@@ -101,6 +91,23 @@ class Todo(ValidateOnSaveMixin, models.Model):
                 pass
 
         super(Todo, self).save(*args, **kwargs)
+
+    def delete(self, using=None, keep_parents=False):
+        self._change_priority_of_remaining_todos()
+        super(Todo, self).delete(using, keep_parents)
+
+    def _change_priority_of_remaining_todos(self):
+        # If the state has changed we need to update the
+        # prioritization of the remaining todo in the previous state
+        query = Todo.objects.filter(
+            ~Q(pk=self.id),
+            Q(state=self._original_state.get('state')),
+            Q(priority_order__gt=self.priority_order)
+        ).order_by('priority_order')
+
+        for todo in query:
+            todo.priority_order -= 1
+            todo.save()
 
     def _did_state_changed(self):
         return self._original_state.get('state') != self.state
