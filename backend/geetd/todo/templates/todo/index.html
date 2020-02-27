@@ -81,7 +81,7 @@
 
     function onCheck(source, todoId) {
         var todoId = $(source).data('todoId');
-        $.ajax('/todos/' + id + '/toggle-complete', {
+        $.ajax('/todos/' + todoId + '/toggle-complete', {
             method: 'POST',
             headers: {
                 'X-CSRFToken': $("[name=csrfmiddlewaretoken]").val()

@@ -10,6 +10,7 @@ from django.core.validators import MaxLengthValidator
 
 from rest_framework import serializers
 
+from ..api.serializers import TodoSerializer
 from ..models import Todo
 from ..models import INBOX
 
@@ -36,7 +37,8 @@ class ToggleCompleteView(View):
         todo.is_done = not todo.is_done
         todo.save()
 
-        return JsonResponse(todo.__dict__)
+        todo_serializer = TodoSerializer(todo)
+        return JsonResponse(todo_serializer.data)
 
 
 class TodoForm(forms.Form):
@@ -95,4 +97,5 @@ class PrioritizeTodoView(View):
         serializer.is_valid(raise_exception=True)
         todo = get_object_or_404(Todo, pk=todo_id)
         todo.prioritize(serializer.validated_data['priority_order'])
-        return JsonResponse(serializer.data)
+        todo_serializer = TodoSerializer(todo)
+        return JsonResponse(todo_serializer.data)
