@@ -7,7 +7,12 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-12">
-                    <h1>{{ selected_state }}</h1>
+                    <h1 class="float-left">{{ selected_state }}</h1>
+                    <form method="post" action="{% url 'web-todo-archive' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="state" value="{{selected_state}}">
+                        <button class="btn btn-primary float-right">Archive done</button>
+                    </form>
                 </div>
             </div>
         </div>

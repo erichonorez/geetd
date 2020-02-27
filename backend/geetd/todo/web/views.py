@@ -39,7 +39,7 @@ class ToggleCompleteView(View):
         return JsonResponse(todo_serializer.data)
 
 
-class WithReferrer(forms.Form):
+class WithReferrer:
     referrer = forms.URLField(required=True)
 
 
@@ -115,3 +115,27 @@ class PrioritizeTodoView(View):
         todo.prioritize(serializer.validated_data['priority_order'])
         todo_serializer = TodoSerializer(todo)
         return JsonResponse(todo_serializer.data)
+
+
+class ArchiveTodoInStateForm(forms.Form):
+    state = forms.CharField(required=True)
+
+
+class ArchiveTodosInStateView(View):
+
+    def post(self, request):
+        form = ArchiveTodoInStateForm(request.POST)
+        if not form.is_valid():
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('web-todo-list')))
+
+        todos = Todo.objects.get_by_state(form.cleaned_data['state'])
+        for todo in todos:
+            todo.is_archived = True
+            todo.save()
+
+        todos = Todo.objects.get_by_state(form.cleaned_data['state'])
+        for idx, todo in enumerate(todos, start=0):
+            todo.priority_order = idx
+            todo.save()
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('web-todo-list')))
