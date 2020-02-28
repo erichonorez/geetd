@@ -23,6 +23,12 @@ class TodoManager(models.Manager):
             .order_by('priority_order')
 
 
+class ArchivedTodoManager(models.Manager):
+
+    def get_queryset(self):
+        return super(models.Manager, self).get_queryset().filter(is_archived=True)
+
+
 class ValidateOnSaveMixin:
     def save(self, skip_validate=False, **kwargs):
         if not skip_validate:
@@ -45,6 +51,7 @@ class Todo(ValidateOnSaveMixin, models.Model):
     is_archived = models.BooleanField(null=False, default=False)
 
     objects = TodoManager()
+    archived = ArchivedTodoManager()
 
     def __init__(self, *args, **kwargs):
         super(Todo, self).__init__(*args, **kwargs)
@@ -84,7 +91,7 @@ class Todo(ValidateOnSaveMixin, models.Model):
 
     def save(self, *args, **kwargs):
         if self._did_state_changed():
-            self.change_priority_of_remaining_todos()
+            self._change_priority_of_remaining_todos()
 
         if self._should_change_priority_order():
             # When the state has changed or if the todo is newly created

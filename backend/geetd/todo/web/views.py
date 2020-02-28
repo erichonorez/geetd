@@ -39,7 +39,7 @@ class ToggleCompleteView(View):
         return JsonResponse(todo_serializer.data)
 
 
-class WithReferrer:
+class WithReferrer(forms.Form):
     referrer = forms.URLField(required=True)
 
 
@@ -139,3 +139,4 @@ class ArchiveTodosInStateView(View):
             todo.save()
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('web-todo-list')))
+
