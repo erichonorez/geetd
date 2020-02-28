@@ -130,8 +130,9 @@ class ArchiveTodosInStateView(View):
 
         todos = Todo.objects.get_by_state(form.cleaned_data['state'])
         for todo in todos:
-            todo.is_archived = True
-            todo.save()
+            if todo.is_done:
+                todo.is_archived = True
+                todo.save()
 
         todos = Todo.objects.get_by_state(form.cleaned_data['state'])
         for idx, todo in enumerate(todos, start=0):
