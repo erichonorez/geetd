@@ -10,6 +10,8 @@ from django.core.exceptions import ValidationError
 
 INBOX = 'inbox'
 NEXT = 'next'
+WAITING = 'waiting'
+SOMEDAY = 'someday'
 
 
 class TodoManager(models.Manager):
@@ -39,14 +41,16 @@ class ValidateOnSaveMixin:
 class Todo(ValidateOnSaveMixin, models.Model):
     STATES = (
         (INBOX, 'Inbox'),
-        (NEXT, 'Next')
+        (NEXT, 'Next'),
+        (WAITING, 'Waiting'),
+        (SOMEDAY, 'Someday')
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255, null=False, blank=False,
                              validators=[MinLengthValidator(1), MaxLengthValidator(255)])
     is_done = models.BooleanField(null=False, default=False)
-    state = models.CharField(max_length=5, choices=STATES, default=INBOX)
+    state = models.CharField(max_length=7, choices=STATES, default=INBOX)
     priority_order = models.IntegerField(default=0)
     is_archived = models.BooleanField(null=False, default=False)
 
