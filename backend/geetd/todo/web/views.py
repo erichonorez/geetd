@@ -99,6 +99,7 @@ class DeleteTodoView(View):
         else:
             redirect_url = form.cleaned_data['referrer']
 
+        # TODO: redirect to the list of todo in the same state
         return HttpResponseRedirect(redirect_url)
 
 
@@ -147,3 +148,18 @@ class ArchivedTodosView(View):
     def get(self, request):
         todos = Todo.archived.all()
         return render(request, 'todo/archived.html', context={'todos': todos, 'sidebar': get_sidebar_context(), 'archived_selected': True})
+
+
+class ArchiveTodoView(View):
+
+    def post(self, request, todo_id):
+        todo = get_object_or_404(Todo, pk=todo_id)
+        todo.is_archived = True
+        todo.save()
+
+        todos = Todo.objects.get_by_state(todo.state)
+        for idx, t in enumerate(todos, start=0):
+            t.priority_order = idx
+            t.save()
+
+        return HttpResponseRedirect(reverse('web-todo-list') + '?state=' + todo.state)

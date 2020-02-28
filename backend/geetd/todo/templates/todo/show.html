@@ -6,7 +6,11 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-12">
-                    <h1>Edit todo</h1>
+                    <h1 class="float-left">Edit todo</h1>
+                    <form method="post" action="{% url 'web-todo-archive' todo_id=todo.id %}" class="float-right">
+                        {% csrf_token %}
+                        <input type="submit" value="Archive" class="btn" />
+                    </form>
                 </div>
             </div>
         </div>
