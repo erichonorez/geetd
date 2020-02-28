@@ -140,3 +140,9 @@ class ArchiveTodosInStateView(View):
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('web-todo-list')))
 
+
+class ArchivedTodosView(View):
+
+    def get(self, request):
+        todos = Todo.archived.all()
+        return render(request, 'todo/archived.html', context={'todos': todos, 'sidebar': get_sidebar_context(), 'archived_selected': True})

@@ -10,4 +10,5 @@ urlpatterns = [
     path('todos/<uuid:todo_id>/toggle-complete', views.ToggleCompleteView.as_view(), name='web-todo-toggle-complete'),
     path('todos/<uuid:todo_id>/delete', views.DeleteTodoView.as_view(), name='web-todo-delete'),
     path('todos/archive', views.ArchiveTodosInStateView.as_view(), name='web-todo-archive'),
+    path('todos/archived', views.ArchivedTodosView.as_view(), name='web-todo-archived'),
 ]

@@ -13,6 +13,12 @@
                 </li>
                 {% endfor %}
             </ul>
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" style="position:absolute; bottom: 0; width: 100%; border-top: 1px solid #4f5962;">
+                <li class="nav-item">
+                    <a href="{% url 'web-todo-archived' %}"
+                       class="nav-link {% if archived_selected %} active {% endif %}">Archived</a>
+                </li>
+            </ul>
         </nav>
     </div>
 </aside>
